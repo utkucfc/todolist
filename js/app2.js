@@ -2,15 +2,21 @@ let task = document.querySelector("#task");
 let ulDOM = document.querySelector("#list");
 let liDOM = document.querySelectorAll("#list>li");
 let keys = Object.keys(localStorage);
-
-keys.sort(compareNumeric).forEach(function (item, index) {
+let completedTodos = JSON.parse(localStorage.getItem("completed"));
+if(!localStorage.getItem("completed")){
+  localStorage.setItem("completed", JSON.stringify([]));
+}
+keys.filter(key=>key!="completed").sort(compareNumeric).forEach(function (item, index) {
   let todo = localStorage.getItem(item);
   let text = document.createTextNode(todo);
   let createLi = document.createElement("li");
   createLi.addEventListener("click", checkLi);
+  if(completedTodos.includes(Number(item))){
+    createLi.classList.add("checked");
+  }  
   createLi.appendChild(text);
   let spanDOM = document.createElement("span");
-  spanDOM.setAttribute("data-id", item);
+ spanDOM.setAttribute("data-id", item);
   spanDOM.setAttribute("onClick", "removeLi(this)");
   spanDOM.classList.add("close");
   spanDOM.innerText = " X ";
@@ -50,9 +56,17 @@ let removeLi = (element) => {
   localStorage.removeItem(element.getAttribute("data-id"));
 };
 function checkLi() {
-  this.classList.contains("checked")
-    ? this.classList.remove("checked")
-    : this.classList.add("checked");
+  this.classList.contains("checked")  ? this.classList.remove("checked") : this.classList.add("checked");
+  
+  let todoId = $(this).children("span").data("id");
+  let completedTodos = JSON.parse(localStorage.getItem("completed"));
+  if (completedTodos.includes(todoId)){
+    completedTodos=completedTodos.filter((item)=>item!=todoId);
+  }
+  else{
+    completedTodos.push(todoId);
+  }
+  localStorage.setItem("completed",JSON.stringify(completedTodos));
 }
 
 function compareNumeric(a, b) {
@@ -60,3 +74,4 @@ function compareNumeric(a, b) {
   if (+a == +b) return 0;
   if (+a < +b) return -1;
 }
+ 
